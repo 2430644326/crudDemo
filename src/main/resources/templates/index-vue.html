@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../static/element.css">
+</head>
+<body>
+<div id="app" style="width: 80%; margin: 0 auto">
+    <h2>用户信息表</h2>
+    <!--新增按钮和输入框-->
+    <el-row>
+        <el-col :span="6" style="margin-bottom: 10px">
+            <el-button type="primary" @click="add">新增</el-button>
+            <el-input v-model="name" style="width: 70%" @keyup.enter.native="loadTable(1)"></el-input>
+        </el-col>
+    </el-row>
+
+
+    <!--el-table形式表格-->
+    <el-table
+            :data="page.content"
+            stripe
+            border
+            style="width: 100%">
+        <el-table-column
+                prop="name"
+                label="用户名"
+        >
+        </el-table-column>
+        <el-table-column
+                prop="sex"
+                label="性别"
+                width="180">
+        </el-table-column>
+        <el-table-column
+                prop="num"
+                label="工号">
+
+            <template slot-scope="scope">
+                <el-button type="primary" icon="el-icon-edit" size="small" circle @click="edit(scope.row)"></el-button>
+                <el-button type="danger" icon="el-icon-delete" size="small" circle @click="del(scope.row.id)"></el-button>
+            </template>
+
+        </el-table-column>
+    </el-table>
+
+
+
+
+    <!--分页器-->
+    <el-row type="flex" justify="center" style="margin-top: 10px">
+        <el-pagination
+                layout="prev, pager, next"
+                :page-size="pageSize"
+                :current-page="pageNum"
+                @prev-click="loadTable"
+                @current-change="loadTable"
+                @next-click="loadTable"
+                :total="page.totalElements">
+        </el-pagination>
+    </el-row>
+
+
+    <!--新增用户弹窗-->
+    <el-dialog
+            title="用户信息"
+            :visible.sync="dialogVisible"
+            width="30%">
+        <el-form ref="form" :model="form" label-width="80px">
+            <el-form-item label="用户名">
+                <el-input v-model="form.name"></el-input>
+            </el-form-item>
+
+            <el-form-item label="性别">
+                <el-radio v-model="form.sex" label="男">男</el-radio>
+                <el-radio v-model="form.sex" label="女">女</el-radio>
+            </el-form-item>
+            <el-form-item label="工号">
+                <el-input v-model="form.num"></el-input>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="save">确 定</el-button>
+        </span>
+    </el-dialog>
+
+</div>
+
+<script src="../static/jquery.min.js"></script>
+<script src="../static/vue.js"></script>
+<!-- 引入组件库 -->
+<script src="../static/element.js"></script>
+<!--新建vue-->
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            page: {},           <!--page-->
+            name: '',           <!--name-->
+            pageNum: 1,         <!--分页-->
+            pageSize: 8,         <!--分页条数-->
+            dialogVisible: false,   <!--弹框开关-->
+            form: {}                <!--新增用户弹窗中编辑用户信息需要用到的对象 -->
+        },
+        created() {
+            this.loadTable(this.pageNum);
+        },
+        methods: {
+            loadTable(num) {        <!--加载数据  通过jquery的ajax调用后台接口-->
+                debugger
+                this.pageNum = num;
+                $.get("/user/page").then(res => {
+                    this.page = res.data;  <!--把后台得到的数据交给page-->
+                });
+            },
+            add() {
+                this.dialogVisible = true;
+                this.form = {};
+            },
+            edit(row) {
+                this.form = row;
+                this.dialogVisible = true;
+            },
+            save() {
+                let data = JSON.stringify(this.form);
+                if (this.form.id) {
+                    // 编辑
+                    $.ajax({
+                        url: '/edit',
+                        type: 'put',
+                        contentType: 'application/json',
+                        data: data
+                    }).then(res => {
+                        this.dialogVisible = false;
+                        this.loadTable(1);
+                    })
+                } else {
+                    // 新增
+                    $.ajax({
+                        url: '/user',
+                        type: 'post',
+                        contentType: 'application/json',
+                        data: data
+                    }).then(res => {
+                        this.dialogVisible = false;
+                        this.loadTable(1);
+                    })
+                }
+            },
+            del(id) {
+                $.ajax({
+                    url: '/user/' + id,
+                    type: 'delete',
+                    contentType: 'application/json'
+                }).then(res => {
+                    this.loadTable(1);
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>

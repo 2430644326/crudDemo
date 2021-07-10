@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ecloudtime.mapper.UserMapper">
+
+
+
+    <!--根据id删除-->
+    <update id="removeById">
+        delete from user where id=#{id}
+
+    </update>
+
+    <!--修改-->
+    <update id="updateUser">
+        update user
+        set name=#{name},
+        sex=#{sex},
+        num=#{num}
+       where id = #{id}
+    </update>
+    <!--添加-->
+    <update id="save">
+        insert into user(id,name,sex,num)
+        values (#{id},#{name},#{sex},#{num})
+    </update>
+
+    <!--查询全部-->
+    <select id="find" resultType="com.ecloudtime.entity.User">
+        select id,name,sex,num
+        from user
+
+    </select>
+    <!--根据id查询-->
+    <select id="getById" resultType="com.ecloudtime.entity.User">
+        select id,name,sex,num
+        from user where id=#{id}
+    </select>
+
+
+
+</mapper>
